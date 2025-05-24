@@ -28,30 +28,44 @@ function MyBoard() {
 
   const rollPool = async (pool) => {
     setError('');
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (!apiUrl) {
+      setError('API URL not configured. Please check environment settings.');
+      return;
+    }
     const poolData = {
       poolName: pool.name,
       rolls: pool.rolls.map((roll) => ({
         name: roll.name,
         numDice: roll.numDice,
         sides: roll.sides,
+        modifier: roll.modifier || 0,
         dropLowest: roll.dropDice && roll.dropType === 'lowest' ? roll.dropCount : 0,
         dropHighest: roll.dropDice && roll.dropType === 'highest' ? roll.dropCount : 0,
       })),
-      modifier: pool.rolls.reduce((sum, roll) => sum + (roll.modifier || 0), 0),
+      modifier: 0 // No pool-level modifier
     };
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/roll-pool`, {
+      const response = await fetch(`${apiUrl}/roll-pool`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(poolData),
       });
       if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `HTTP error ${response.status}: ${errorData.error || 'Unknown error'}`
+        );
       }
       const result = await response.json();
       addRollResult(result);
     } catch (err) {
-      setError(`Failed to roll ${pool.name}: ${err.message}`);
+      console.error('Roll pool error:', err);
+      setError(
+        err.name === 'TypeError' && err.message.includes('Failed to fetch')
+          ? `Failed to roll ${pool.name}: CORS error or network issue. Ensure API is accessible.`
+          : `Failed to roll ${pool.name}: ${err.message}`
+      );
     }
   };
 
@@ -230,24 +244,17 @@ function MyBoard() {
                         <ul className="ml-4">
                           {result.rolls.map((roll) => (
                             <li key={roll.name}>
-                              {roll.name}: {roll.input.numDice}d{roll.input.sides}
+                              <span className="font-bold">{roll.name}</span>: {roll.input.numDice}d{roll.input.sides}
                               {roll.input.dropLowest > 0 && ` drop lowest ${roll.input.dropLowest}`}
                               {roll.input.dropHighest > 0 && ` drop highest ${roll.input.dropHighest}`}
                               : [{roll.results.rolls.join(', ')}]
-                              {roll.results.keptRolls.length < roll.results.rolls.length &&
+                              {roll.results.keptRolls.length < result.results.rolls.length &&
                                 ` (kept [${roll.results.keptRolls.join(', ')}])`}
-                              = {roll.results.subtotal}
+                              = <span className="font-bold">{roll.results.total}</span>
+                              {roll.input.modifier !== 0 && ` (+${roll.input.modifier})`}
                             </li>
                           ))}
                         </ul>
-                        {result.modifier !== 0 && (
-                          <span>
-                            Modifier: {result.modifier > 0 ? '+' : ''}{result.modifier}
-                          </span>
-                        )}
-                        <br />
-                        Total: <span className="font-bold">{result.total}</span>
-                        <br />
                         <span className="text-gray-500 text-xs">{result.timestamp}</span>
                       </>
                     )}

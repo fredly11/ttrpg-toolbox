@@ -29,19 +29,32 @@ function DiceRoller() {
     setError('');
     const { numDice, modifier } = inputs[dice];
     const sides = parseInt(dice.replace('d', ''));
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (!apiUrl) {
+      setError('API URL not configured. Please check environment settings.');
+      return;
+    }
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/roll`, {
+      const response = await fetch(`${apiUrl}/roll`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ numDice, sides, modifier }),
       });
       if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `HTTP error ${response.status}: ${errorData.error || 'Unknown error'}`
+        );
       }
       const result = await response.json();
-      addRollResult({ ...result, diceType: dice }); // Add diceType for display
+      addRollResult({ ...result, diceType: dice });
     } catch (err) {
-      setError(`Failed to roll ${dice}: ${err.message}`);
+      console.error('Roll error:', err);
+      setError(
+        err.name === 'TypeError' && err.message.includes('Failed to fetch')
+          ? `Failed to roll ${dice}: CORS error or network issue. Ensure API is accessible.`
+          : `Failed to roll ${dice}: ${err.message}`
+      );
     }
   };
 
@@ -195,24 +208,17 @@ function DiceRoller() {
                         <ul className="ml-4">
                           {result.rolls.map((roll) => (
                             <li key={roll.name}>
-                              {roll.name}: {roll.input.numDice}d{roll.input.sides}
+                              <span className="font-bold">{roll.name}</span>: {roll.input.numDice}d{roll.input.sides}
                               {roll.input.dropLowest > 0 && ` drop lowest ${roll.input.dropLowest}`}
                               {roll.input.dropHighest > 0 && ` drop highest ${roll.input.dropHighest}`}
                               : [{roll.results.rolls.join(', ')}]
                               {roll.results.keptRolls.length < roll.results.rolls.length &&
                                 ` (kept [${roll.results.keptRolls.join(', ')}])`}
-                              = {roll.results.subtotal}
+                              = <span className="font-bold">{roll.results.total}</span>
+                              {roll.input.modifier !== 0 && ` (+${roll.input.modifier})`}
                             </li>
                           ))}
                         </ul>
-                        {result.modifier !== 0 && (
-                          <span>
-                            Modifier: {result.modifier > 0 ? '+' : ''}{result.modifier}
-                          </span>
-                        )}
-                        <br />
-                        Total: <span className="font-bold">{result.total}</span>
-                        <br />
                         <span className="text-gray-500 text-xs">{result.timestamp}</span>
                       </>
                     )}
