@@ -39,7 +39,6 @@ function AdvancedDiceRoller() {
   const savePool = () => {
     if (poolName.trim() && rolls.some((roll) => roll.name.trim())) {
       addPool({
-        id: Date.now(),
         name: poolName,
         includeCombinedTotal,
         rolls: rolls.map((roll) => ({

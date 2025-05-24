@@ -1,140 +1,79 @@
-import { useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import DiceRoller from './components/DiceRoller'
-import AdvancedDiceRoller from './components/AdvancedDiceRoller'
-import MyBoard from './components/MyBoard'
-import { DicePoolProvider } from './context/DicePoolContext'
-
-function Home() {
-  return (
-    <div className="bg-white p-6 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Welcome to TTRPG Toolbox</h1>
-      <p className="text-gray-700">
-        Your one-stop shop for tabletop RPG tools. Select a tool from the navigation bar to get started!
-      </p>
-    </div>
-  )
-}
-
-function KnowledgeBase() {
-  return (
-    <div className="bg-white p-6 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Knowledge Base</h1>
-      <p className="text-gray-700">Build and manage your TTRPG knowledge base.</p>
-    </div>
-  )
-}
-
-function RandomGenerator() {
-  return (
-    <div className="bg-white p-6 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Random Generator</h1>
-      <p className="text-gray-700">Generate random items, events, or more.</p>
-    </div>
-  )
-}
-
-function Blog() {
-  return (
-    <div className="bg-white p-6 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Blog</h1>
-      <p className="text-gray-700">Read the latest TTRPG tips and updates.</p>
-    </div>
-  )
-}
-
-function Contact() {
-  return (
-    <div className="bg-white p-6 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Contact</h1>
-      <p className="text-gray-700">Get in touch with us!</p>
-    </div>
-  )
-}
-
-function Profile() {
-  return (
-    <div className="bg-white p-6 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Profile</h1>
-      <p className="text-gray-700">Manage your account and settings.</p>
-    </div>
-  )
-}
+import { useState, useEffect } from 'react';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Auth } from 'aws-amplify';
+import DiceRoller from './components/DiceRoller.jsx';
+import AdvancedDiceRoller from './components/AdvancedDiceRoller.jsx';
+import MyBoard from './components/MyBoard.jsx';
+import Login from './components/Login.jsx';
+import Signup from './components/Signup.jsx';
+import ConfirmSignup from './components/ConfirmSignup.jsx';
+import ResetPassword from './components/ResetPassword.jsx';
+import { DicePoolProvider } from './context/DicePoolContext.jsx';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // Mock login state
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const currentUser = await Auth.currentAuthenticatedUser();
+      setUser(currentUser);
+    } catch {
+      setUser(null);
+    }
+  };
+
+  const handleLogout = async () => {
+    await Auth.signOut();
+    setUser(null);
+    navigate('/login');
+  };
 
   return (
     <DicePoolProvider>
-      <div className="flex flex-col min-h-screen bg-gray-100">
-        <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-        <main className="flex flex-1 max-w-[1920px] mx-auto py-8">
-          {/* Left Empty Space (1/8) */}
-          <div className="hidden md:block w-[80px] min-w-[80px]"></div>
-          {/* Left Sidebar (1/8) */}
-          <aside className="hidden md:block w-[60px] min-w-[200px] px-4">
-            <div className="bg-white p-4 rounded shadow">
-              <p className="text-gray-600">Sidebar (Ads/Widgets)</p>
-            </div>
-          </aside>
-          {/* Main Content (1/2 for non-dice pages, 5/8 for dice pages) */}
-          <section className="w-full md:w-[960px] px-4">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/tools/dice-roller" element={<DiceRoller />} />
-              <Route path="/tools/dice-roller/advanced" element={<AdvancedDiceRoller />} />
-              <Route path="/tools/dice-roller/my-board" element={<MyBoard />} />
-              <Route path="/tools/knowledge-base" element={<KnowledgeBase />} />
-              <Route path="/tools/random-generator" element={<RandomGenerator />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/profile" element={<Profile />} />
-            </Routes>
-          </section>
-          {/* Right Sidebar (1/8, non-dice pages only) */}
-          <aside className="hidden md:block w-[60px] min-w-[200px] px-4">
-            <Routes>
-              <Route path="/" element={
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-gray-600">Right Sidebar (Ads/Widgets)</p>
-                </div>
-              } />
-              <Route path="/tools/knowledge-base" element={
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-gray-600">Right Sidebar (Ads/Widgets)</p>
-                </div>
-              } />
-              <Route path="/tools/random-generator" element={
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-gray-600">Right Sidebar (Ads/Widgets)</p>
-                </div>
-              } />
-              <Route path="/blog" element={
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-gray-600">Right Sidebar (Ads/Widgets)</p>
-                </div>
-              } />
-              <Route path="/contact" element={
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-gray-600">Right Sidebar (Ads/Widgets)</p>
-                </div>
-              } />
-              <Route path="/profile" element={
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-gray-600">Right Sidebar (Ads/Widgets)</p>
-                </div>
-              } />
-            </Routes>
-          </aside>
-          {/* Right Empty Space (1/8) */}
-          <div className="hidden md:block w-[240px] min-w-[200px]"></div>
+      <div className="min-h-screen bg-gray-100">
+        <header className="bg-blue-800 text-white p-4">
+          <div className="container mx-auto flex justify-between items-center">
+            <Link to="/" className="text-2xl font-bold">TTRPG Toolbox</Link>
+            <nav>
+              {user ? (
+                <>
+                  <span className="mr-4">Welcome, {user.attributes.email}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  >
+                    Log Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="mr-4 hover:underline">Log In</Link>
+                  <Link to="/signup" className="hover:underline">Sign Up</Link>
+                </>
+              )}
+            </nav>
+          </div>
+        </header>
+        <main className="container mx-auto p-4">
+          <Routes>
+            <Route path="/" element={<DiceRoller />} />
+            <Route path="/tools/dice-roller" element={<DiceRoller />} />
+            <Route path="/tools/dice-roller/advanced" element={<AdvancedDiceRoller />} />
+            <Route path="/tools/dice-roller/my-board" element={<MyBoard />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/confirm-signup" element={<ConfirmSignup />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+          </Routes>
         </main>
-        <Footer />
       </div>
     </DicePoolProvider>
-  )
+  );
 }
 
-export default App
+export default App;
