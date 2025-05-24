@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import { Auth } from 'aws-amplify';
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 
 export const DicePoolContext = createContext();
 
@@ -14,8 +14,10 @@ export const DicePoolProvider = ({ children }) => {
 
   const fetchPools = async () => {
     try {
-      const user = await Auth.currentAuthenticatedUser();
-      const token = user.signInUserSession.idToken.jwtToken;
+      await getCurrentUser(); // Throws if not authenticated
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      if (!token) throw new Error('No token available');
       const response = await fetch(`${apiUrl}/get-pools`, {
         method: 'POST',
         headers: {
@@ -33,8 +35,10 @@ export const DicePoolProvider = ({ children }) => {
 
   const addPool = async (pool) => {
     try {
-      const user = await Auth.currentAuthenticatedUser();
-      const token = user.signInUserSession.idToken.jwtToken;
+      await getCurrentUser();
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      if (!token) throw new Error('No token available');
       const response = await fetch(`${apiUrl}/save-pool`, {
         method: 'POST',
         headers: {
@@ -52,8 +56,10 @@ export const DicePoolProvider = ({ children }) => {
 
   const removePool = async (id) => {
     try {
-      const user = await Auth.currentAuthenticatedUser();
-      const token = user.signInUserSession.idToken.jwtToken;
+      await getCurrentUser();
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      if (!token) throw new Error('No token available');
       const response = await fetch(`${apiUrl}/delete-pool`, {
         method: 'POST',
         headers: {

@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Auth } from 'aws-amplify';
+import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 function ResetPassword() {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [step, setStep] = useState('request'); // request, confirm
+  const [step, setStep] = useState('request'); // 'request' or 'confirm'
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -14,7 +14,7 @@ function ResetPassword() {
     e.preventDefault();
     setError('');
     try {
-      await Auth.forgotPassword(email);
+      await resetPassword({ username: email });
       setStep('confirm');
     } catch (err) {
       setError(err.message);
@@ -25,7 +25,7 @@ function ResetPassword() {
     e.preventDefault();
     setError('');
     try {
-      await Auth.forgotPasswordSubmit(email, code, newPassword);
+      await confirmResetPassword({ username: email, confirmationCode: code, newPassword });
       navigate('/login');
     } catch (err) {
       setError(err.message);
@@ -52,7 +52,7 @@ function ResetPassword() {
             type="submit"
             className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
           >
-            Send Reset Code
+            Send Code
           </button>
         </form>
       ) : (

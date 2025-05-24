@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { Auth } from 'aws-amplify';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { confirmSignUp } from 'aws-amplify/auth';
+import { useNavigate } from 'react-router-dom';
 
 function ConfirmSignup() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const email = state?.email || '';
+  const username = localStorage.getItem('username');
 
   const handleConfirm = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      await Auth.confirmSignUp(email, code);
-      navigate('/login');
+      await confirmSignUp({ username, confirmationCode: code });
+      localStorage.removeItem('username');
+      navigate('/tools/dice-roller');
     } catch (err) {
       setError(err.message);
     }
@@ -23,7 +23,6 @@ function ConfirmSignup() {
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-6">Confirm Sign Up</h2>
-      <p className="mb-4">A code was sent to {email}. Enter it below.</p>
       {error && <p className="text-red-600 mb-4">{error}</p>}
       <form onSubmit={handleConfirm} className="space-y-4">
         <div>
@@ -33,6 +32,7 @@ function ConfirmSignup() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             className="w-full p-2 border rounded"
+            placeholder="Enter code from email"
             required
           />
         </div>

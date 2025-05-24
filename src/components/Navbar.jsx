@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-function Navbar({ isLoggedIn, setIsLoggedIn }) {
-  const [isToolsOpen, setIsToolsOpen] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+function Navbar({ user, handleLogout }) {
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <nav className="bg-blue-600 text-white shadow-md">
@@ -77,18 +77,28 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
           <Link to="/blog" className="hover:text-blue-200">Blog</Link>
           <Link to="/contact" className="hover:text-blue-200">Contact</Link>
 
-          {/* Profile/Login Button */}
-          {isLoggedIn ? (
-            <Link to="/profile" className="hover:text-blue-200">
-              Profile
-            </Link>
+          {/* Auth Links */}
+          {user ? (
+            <>
+              <Link to="/profile" className="hover:text-blue-200">
+                Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-blue-800 px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Log Out
+              </button>
+            </>
           ) : (
-            <button
-              onClick={() => setIsLoggedIn(true)}
-              className="bg-blue-800 px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Login
-            </button>
+            <>
+              <Link to="/login" className="hover:text-blue-200">
+                Log In
+              </Link>
+              <Link to="/signup" className="bg-blue-800 px-4 py-2 rounded hover:bg-blue-700">
+                Sign Up
+              </Link>
+            </>
           )}
         </div>
       </div>
@@ -119,8 +129,8 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                     to="/tools/dice-roller"
                     className="block hover:text-blue-200 py-2"
                     onClick={() => {
-                      setIsToolsOpen(false)
-                      setIsMobileMenuOpen(false)
+                      setIsToolsOpen(false);
+                      setIsMobileMenuOpen(false);
                     }}
                   >
                     Dice Roller
@@ -129,8 +139,8 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                     to="/tools/knowledge-base"
                     className="block hover:text-blue-200 py-2"
                     onClick={() => {
-                      setIsToolsOpen(false)
-                      setIsMobileMenuOpen(false)
+                      setIsToolsOpen(false);
+                      setIsMobileMenuOpen(false);
                     }}
                   >
                     Knowledge Base
@@ -139,8 +149,8 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                     to="/tools/random-generator"
                     className="block hover:text-blue-200 py-2"
                     onClick={() => {
-                      setIsToolsOpen(false)
-                      setIsMobileMenuOpen(false)
+                      setIsToolsOpen(false);
+                      setIsMobileMenuOpen(false);
                     }}
                   >
                     Random Generator
@@ -164,30 +174,48 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
               Contact
             </Link>
 
-            {isLoggedIn ? (
-              <Link
-                to="/profile"
-                className="hover:text-blue-200 py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Profile
-              </Link>
+            {user ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="hover:text-blue-200 py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="bg-blue-800 px-4 py-2 rounded hover:bg-blue-700 text-left"
+                >
+                  Log Out
+                </button>
+              </>
             ) : (
-              <button
-                onClick={() => {
-                  setIsLoggedIn(true)
-                  setIsMobileMenuOpen(false)
-                }}
-                className="bg-blue-800 px-4 py-2 rounded hover:bg-blue-700 text-left"
-              >
-                Login
-              </button>
+              <>
+                <Link
+                  to="/login"
+                  className="hover:text-blue-200 py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-blue-800 px-4 py-2 rounded hover:bg-blue-700 text-left"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </>
             )}
           </div>
         </div>
       )}
     </nav>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

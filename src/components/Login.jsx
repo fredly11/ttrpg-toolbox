@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Auth } from 'aws-amplify';
+import { signIn } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
@@ -12,7 +12,7 @@ function Login() {
     e.preventDefault();
     setError('');
     try {
-      await Auth.signIn(email, password);
+      await signIn({ username: email, password });
       navigate('/tools/dice-roller');
     } catch (err) {
       setError(err.message);

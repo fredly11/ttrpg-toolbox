@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Auth } from 'aws-amplify';
+import { signUp } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 function Signup() {
@@ -12,12 +12,16 @@ function Signup() {
     e.preventDefault();
     setError('');
     try {
-      await Auth.signUp({
+      await signUp({
         username: email,
         password,
-        attributes: { email }
+        options: {
+          userAttributes: { email },
+          autoSignIn: true // Auto-sign-in after confirmation
+        }
       });
-      navigate('/confirm-signup', { state: { email } });
+      localStorage.setItem('username', email); // For ConfirmSignup
+      navigate('/confirm-signup');
     } catch (err) {
       setError(err.message);
     }
