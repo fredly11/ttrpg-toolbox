@@ -103,6 +103,13 @@ function AdvancedDiceRoller() {
     }
   };
 
+  const getDiceNotation = (input) => {
+    let notation = `${input.numDice}d${input.sides}`;
+    if (input.dropLowest > 0) notation += ` drop ${input.dropLowest} lowest`;
+    if (input.dropHighest > 0) notation += ` drop ${input.dropHighest} highest`;
+    return notation;
+  };
+
   return (
     <div className="flex flex-col md:flex-row flex-1 md:space-x-4 w-[1200px]">
       {/* Tabs for Mobile */}
@@ -259,45 +266,49 @@ function AdvancedDiceRoller() {
                 <hr className="border-gray-300" />
               </div>
             ))}
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+            <div className="space-y-4">
               <button
                 onClick={addRoll}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full md:w-auto"
               >
                 Add Another Roll
               </button>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="Dice Pool Name"
-                  value={poolName}
-                  onChange={(e) => setPoolName(e.target.value)}
-                  className="p-2 border rounded flex-1"
-                  aria-label="Dice pool name"
-                />
-                <label className="flex items-center space-x-1">
+              <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                <div className="flex items-center space-x-2 flex-1">
                   <input
-                    type="checkbox"
-                    checked={includeCombinedTotal}
-                    onChange={(e) => setIncludeCombinedTotal(e.target.checked)}
-                    className="h-4 w-4"
-                    aria-label="Include combined total"
+                    type="text"
+                    placeholder="Dice Pool Name"
+                    value={poolName}
+                    onChange={(e) => setPoolName(e.target.value)}
+                    className="p-2 border rounded flex-1"
+                    aria-label="Dice pool name"
                   />
-                  <span className="text-sm">Combined Total</span>
-                </label>
+                  <label className="flex items-center space-x-1">
+                    <input
+                      type="checkbox"
+                      checked={includeCombinedTotal}
+                      onChange={(e) => setIncludeCombinedTotal(e.target.checked)}
+                      className="h-4 w-4"
+                      aria-label="Include combined total"
+                    />
+                    <span className="text-sm">Combined Total</span>
+                  </label>
+                </div>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={savePool}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                  >
+                    Save Pool
+                  </button>
+                  <button
+                    onClick={rollPool}
+                    className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                  >
+                    Roll Pool
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={savePool}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Save Pool
-              </button>
-              <button
-                onClick={rollPool}
-                className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-              >
-                Roll Pool
-              </button>
             </div>
           </div>
         </div>
@@ -358,7 +369,7 @@ function AdvancedDiceRoller() {
                         <ul className="ml-4">
                           {result.rolls.map((roll) => (
                             <li key={roll.name}>
-                              <span className="font-bold">{roll.name}</span>: [
+                              <span className="font-bold">{roll.name}</span>, {getDiceNotation(roll.input)}: [
                               {roll.results.rolls.map((r, i) => (
                                 <span key={i} className={r.dropped ? 'text-gray-400' : ''}>
                                   {r.value}

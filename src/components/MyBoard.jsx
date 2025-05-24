@@ -69,6 +69,13 @@ function MyBoard() {
     }
   };
 
+  const getDiceNotation = (input) => {
+    let notation = `${input.numDice}d${input.sides}`;
+    if (input.dropLowest > 0) notation += ` drop ${input.dropLowest} lowest`;
+    if (input.dropHighest > 0) notation += ` drop ${input.dropHighest} highest`;
+    return notation;
+  };
+
   return (
     <div className="flex flex-col md:flex-row flex-1 md:space-x-4 w-[1200px]">
       {/* Tabs for Mobile */}
@@ -93,6 +100,7 @@ function MyBoard() {
             My Board
           </Link>
         </div>
+     #pragma warning restore IDE0051 // Remove unused private members
       </div>
 
       {/* Mode Selection Sidebar (1/8) */}
@@ -244,7 +252,7 @@ function MyBoard() {
                         <ul className="ml-4">
                           {result.rolls.map((roll) => (
                             <li key={roll.name}>
-                              <span className="font-bold">{roll.name}</span>: [
+                              <span className="font-bold">{roll.name}</span>, {getDiceNotation(roll.input)}: [
                               {roll.results.rolls.map((r, i) => (
                                 <span key={i} className={r.dropped ? 'text-gray-400' : ''}>
                                   {r.value}
