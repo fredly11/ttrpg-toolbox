@@ -7,12 +7,7 @@ export const DicePoolProvider = ({ children }) => {
   const [rollResults, setRollResults] = useState([]);
 
   const addPool = (pool) => {
-    setPools((prev) => {
-      if (prev.length >= 5) {
-        return [pool, ...prev.slice(0, 4)];
-      }
-      return [pool, ...prev];
-    });
+    setPools((prev) => [...prev, pool].slice(0, 5)); // Limit to 5 pools
   };
 
   const removePool = (id) => {
@@ -20,7 +15,7 @@ export const DicePoolProvider = ({ children }) => {
   };
 
   const addRollResult = (result) => {
-    setRollResults((prev) => [result, ...prev.slice(0, 19)]); // Keep last 20 results
+    setRollResults((prev) => [result, ...prev].slice(0, 100)); // Limit to 100 results
   };
 
   return (

@@ -208,17 +208,23 @@ function DiceRoller() {
                         <ul className="ml-4">
                           {result.rolls.map((roll) => (
                             <li key={roll.name}>
-                              <span className="font-bold">{roll.name}</span>: {roll.input.numDice}d{roll.input.sides}
-                              {roll.input.dropLowest > 0 && ` drop lowest ${roll.input.dropLowest}`}
-                              {roll.input.dropHighest > 0 && ` drop highest ${roll.input.dropHighest}`}
-                              : [{roll.results.rolls.join(', ')}]
-                              {roll.results.keptRolls.length < roll.results.rolls.length &&
-                                ` (kept [${roll.results.keptRolls.join(', ')}])`}
+                              <span className="font-bold">{roll.name}</span>: [
+                              {roll.results.rolls.map((r, i) => (
+                                <span key={i} className={r.dropped ? 'text-gray-400' : ''}>
+                                  {r.value}
+                                  {i < roll.results.rolls.length - 1 ? ', ' : ''}
+                                </span>
+                              ))}
+                              ]{roll.input.modifier !== 0 && ` + ${roll.input.modifier}`}{' '}
                               = <span className="font-bold">{roll.results.total}</span>
-                              {roll.input.modifier !== 0 && ` (+${roll.input.modifier})`}
                             </li>
                           ))}
                         </ul>
+                        {result.combinedTotal !== undefined && (
+                          <div className="ml-4">
+                            Total: <span className="font-bold">{result.combinedTotal}</span>
+                          </div>
+                        )}
                         <span className="text-gray-500 text-xs">{result.timestamp}</span>
                       </>
                     )}

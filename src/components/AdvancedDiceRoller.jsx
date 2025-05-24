@@ -9,6 +9,7 @@ function AdvancedDiceRoller() {
     { id: 1, name: '', numDice: 1, sides: 6, modifier: 0, dropDice: false, dropCount: 0, dropType: 'highest' },
   ]);
   const [poolName, setPoolName] = useState('');
+  const [includeCombinedTotal, setIncludeCombinedTotal] = useState(false);
   const [isResultsOpen, setIsResultsOpen] = useState(false);
   const [error, setError] = useState('');
 
@@ -40,6 +41,7 @@ function AdvancedDiceRoller() {
       addPool({
         id: Date.now(),
         name: poolName,
+        includeCombinedTotal,
         rolls: rolls.map((roll) => ({
           name: roll.name,
           numDice: parseInt(roll.numDice) || 1,
@@ -51,6 +53,7 @@ function AdvancedDiceRoller() {
         })),
       });
       setPoolName('');
+      setIncludeCombinedTotal(false);
       setRolls([
         { id: 1, name: '', numDice: 1, sides: 6, modifier: 0, dropDice: false, dropCount: 0, dropType: 'highest' },
       ]);
@@ -74,7 +77,7 @@ function AdvancedDiceRoller() {
         dropLowest: roll.dropDice && roll.dropType === 'lowest' ? parseInt(roll.dropCount) || 0 : 0,
         dropHighest: roll.dropDice && roll.dropType === 'highest' ? parseInt(roll.dropCount) || 0 : 0,
       })),
-      modifier: 0 // No pool-level modifier; use roll-specific modifiers
+      includeCombinedTotal
     };
     try {
       const response = await fetch(`${apiUrl}/roll-pool`, {
@@ -263,14 +266,26 @@ function AdvancedDiceRoller() {
               >
                 Add Another Roll
               </button>
-              <input
-                type="text"
-                placeholder="Dice Pool Name"
-                value={poolName}
-                onChange={(e) => setPoolName(e.target.value)}
-                className="p-2 border rounded flex-1"
-                aria-label="Dice pool name"
-              />
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Dice Pool Name"
+                  value={poolName}
+                  onChange={(e) => setPoolName(e.target.value)}
+                  className="p-2 border rounded flex-1"
+                  aria-label="Dice pool name"
+                />
+                <label className="flex items-center space-x-1">
+                  <input
+                    type="checkbox"
+                    checked={includeCombinedTotal}
+                    onChange={(e) => setIncludeCombinedTotal(e.target.checked)}
+                    className="h-4 w-4"
+                    aria-label="Include combined total"
+                  />
+                  <span className="text-sm">Combined Total</span>
+                </label>
+              </div>
               <button
                 onClick={savePool}
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -343,17 +358,23 @@ function AdvancedDiceRoller() {
                         <ul className="ml-4">
                           {result.rolls.map((roll) => (
                             <li key={roll.name}>
-                              <span className="font-bold">{roll.name}</span>: {roll.input.numDice}d{roll.input.sides}
-                              {roll.input.dropLowest > 0 && ` drop lowest ${roll.input.dropLowest}`}
-                              {roll.input.dropHighest > 0 && ` drop highest ${roll.input.dropHighest}`}
-                              : [{roll.results.rolls.join(', ')}]
-                              {roll.results.keptRolls.length < roll.results.rolls.length &&
-                                ` (kept [${roll.results.keptRolls.join(', ')}])`}
+                              <span className="font-bold">{roll.name}</span>: [
+                              {roll.results.rolls.map((r, i) => (
+                                <span key={i} className={r.dropped ? 'text-gray-400' : ''}>
+                                  {r.value}
+                                  {i < roll.results.rolls.length - 1 ? ', ' : ''}
+                                </span>
+                              ))}
+                              ]{roll.input.modifier !== 0 && ` + ${roll.input.modifier}`}{' '}
                               = <span className="font-bold">{roll.results.total}</span>
-                              {roll.input.modifier !== 0 && ` (+${roll.input.modifier})`}
                             </li>
                           ))}
                         </ul>
+                        {result.combinedTotal !== undefined && (
+                          <div className="ml-4">
+                            Total: <span className="font-bold">{result.combinedTotal}</span>
+                          </div>
+                        )}
                         <span className="text-gray-500 text-xs">{result.timestamp}</span>
                       </>
                     )}
