@@ -9,6 +9,7 @@ const awsmobile = {
     userAttributes: [
       { Name: 'email', Required: true },
       { Name: 'custom:email_updates', Required: false }
+      { Name: 'preferred_username', Required: true }
     ]
   }
 };
