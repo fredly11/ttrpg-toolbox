@@ -21,7 +21,7 @@ function Signup() {
         username,
         password,
         attributes: {
-          email,
+          email: email,
           preferred_username: username, // Optional: Reuse username
           'custom:email_updates': emailUpdates ? '1' : '0'
         }
