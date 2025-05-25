@@ -1,56 +1,95 @@
 import { useState } from 'react';
-import { signUp } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
+import { signUp } from 'aws-amplify/auth';
 
 function Signup() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [emailUpdates, setEmailUpdates] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    if (password !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
     try {
       await signUp({
-        username: email,
+        username,
         password,
-        options: {
-          userAttributes: { email },
-          autoSignIn: true // Auto-sign-in after confirmation
+        attributes: {
+          email,
+          'custom:email_updates': emailUpdates ? '1' : '0'
         }
       });
-      localStorage.setItem('username', email); // For ConfirmSignup
-      navigate('/confirm-signup');
+      navigate('/confirm-signup', { state: { username } });
     } catch (err) {
-      setError(err.message);
+      console.error('Signup error:', err);
+      alert('Signup failed: ' + err.message);
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-6">Sign Up</h2>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div>
-          <label className="block text-gray-700">Email</label>
+    <div className="bg-white p-6 rounded shadow">
+      <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label htmlFor="username" className="block text-gray-700">Username</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-gray-700">Email</label>
           <input
             type="email"
+            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-2 border rounded"
             required
           />
         </div>
-        <div>
-          <label className="block text-gray-700">Password</label>
+        <div className="mb-4">
+          <label htmlFor="password" className="block text-gray-700">Password</label>
           <input
             type="password"
+            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 border rounded"
             required
           />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="confirmPassword" className="block text-gray-700">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={emailUpdates}
+              onChange={(e) => setEmailUpdates(e.target.checked)}
+              className="mr-2"
+            />
+            <span className="text-gray-700">Sign up for email updates</span>
+          </label>
         </div>
         <button
           type="submit"
@@ -59,12 +98,6 @@ function Signup() {
           Sign Up
         </button>
       </form>
-      <p className="mt-4 text-center">
-        Already have an account?{' '}
-        <a href="/login" className="text-blue-600 hover:underline">
-          Log in
-        </a>
-      </p>
     </div>
   );
 }

@@ -1,38 +1,36 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { confirmSignUp } from 'aws-amplify/auth';
-import { useNavigate } from 'react-router-dom';
 
 function ConfirmSignup() {
   const [code, setCode] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
-  const username = localStorage.getItem('username');
+  const location = useLocation();
+  const username = location.state?.username || '';
 
-  const handleConfirm = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     try {
       await confirmSignUp({ username, confirmationCode: code });
-      localStorage.removeItem('username');
-      navigate('/tools/dice-roller');
+      navigate('/login');
     } catch (err) {
-      setError(err.message);
+      console.error('Confirm signup error:', err);
+      alert('Confirmation failed: ' + err.message);
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-6">Confirm Sign Up</h2>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
-      <form onSubmit={handleConfirm} className="space-y-4">
-        <div>
-          <label className="block text-gray-700">Confirmation Code</label>
+    <div className="bg-white p-6 rounded shadow">
+      <h1 className="text-2xl font-bold mb-4">Confirm Sign Up</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label htmlFor="code" className="block text-gray-700">Confirmation Code</label>
           <input
             type="text"
+            id="code"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             className="w-full p-2 border rounded"
-            placeholder="Enter code from email"
             required
           />
         </div>
