@@ -8,7 +8,7 @@ const awsmobile = {
     mandatorySignIn: false,
     userAttributes: [
       { Name: 'email', Required: true },
-      { Name: 'custom:email_updates', Required: false }
+      { Name: 'custom:email_updates', Required: false },
       { Name: 'preferred_username', Required: true }
     ]
   }
